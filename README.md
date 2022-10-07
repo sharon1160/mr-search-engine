@@ -64,3 +64,59 @@ The following command synchronizes local and remote data.
 ```
 ❯ gsutil -m rsync -r "gs://{{BUCKET_NAME}}/invertedindex-output" output/inverted-index
 ```
+
+### PageRank
+
+Clone branch [mr-search-engine](https://github.com/jersonzc/pagerank/tree/mr-search-engine) from [pagerank repository](https://github.com/jersonzc/pagerank). Compile and create a JAR executable.
+
+#### Upload to Google Cloud Storage
+
+```
+❯ gsutil cp target/pagerank-1.0-SNAPSHOT-jar-with-dependencies.jar  "gs://{{BUCKET_NAME}}/pagerank.jar"
+```
+
+#### Create and submit job
+
+Create a job following Google Dataproc schema, for example:
+
+```
+POST /v1/projects/{{PROJECT_ID}}/regions/{{REGION}}/jobs:submit/
+{
+  "projectId": "{{PROJECT_ID}}",
+  "job": {
+    "placement": {
+      "clusterName": "{{CLUSTER_NAME}}"
+    },
+    "statusHistory": [],
+    "reference": {
+      "jobId": "{{JOB_ID}}",
+      "projectId": "{{PROJECT_ID}}"
+    },
+    "hadoopJob": {
+      "properties": {},
+      "jarFileUris": [
+        "gs://{{BUCKET_NAME}}/pagerank.jar"
+      ],
+      "args": [
+        "gs://{{BUCKET_NAME}}/data",
+        "gs://{{BUCKET_NAME}}/pagerank-temp",
+        "gs://{{BUCKET_NAME}}/pagerank-output",
+        "4"
+      ],
+      "mainClass": "com.mycompany.app.PageRank"
+    }
+  }
+}
+```
+
+```
+❯ gcloud dataproc jobs wait {{JOB_ID}} --project {{PROJECT_ID}} --region {{REGION}}
+```
+
+#### Sync results
+
+The following command synchronizes local and remote data.
+
+```
+❯ gsutil -m rsync -r "gs://{{BUCKET_NAME}}/pagerank-output" output/pagerank
+```
