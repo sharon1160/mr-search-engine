@@ -120,3 +120,7 @@ The following command synchronizes local and remote data.
 ```
 ❯ gsutil -m rsync -r "gs://{{BUCKET_NAME}}/pagerank-output" output/pagerank
 ```
+
+### Join part-r-\*
+
+Join results from Inverted Index and PageRank algorithms into one text file. Go to [output](output) directory and run [join.sh](output/join.sh).
