@@ -35,7 +35,7 @@ TO-DO
 
 ### Inverted Index
 
-Clone branch [mr-search-engine](https://github.com/sharon1161/inverted-index/tree/mr-search-engine) from [inverted-index repository](https://github.com/sharon1160/inverted-index). Compile and create a JAR executable.
+Clone branch [mr-search-engine](https://github.com/sharon1160/inverted-index/tree/mr-search-engine) from [inverted-index repository](https://github.com/sharon1160/inverted-index). Compile and create a JAR executable.
 
 - Upload to Google Cloud Storage
 
