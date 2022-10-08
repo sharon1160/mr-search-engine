@@ -5,20 +5,13 @@
 ## Table of contents
 
 - [busca.pe](#buscape)
-  - [Table of contents](#table-of-contents)
-  - [Architecture](#architecture)
-  - [Requirements](#requirements)
-    - [Data](#data)
-      - [Upload to Google Cloud Storage](#upload-to-google-cloud-storage)
-    - [Inverted Index](#inverted-index)
-      - [Upload to Google Cloud Storage](#upload-to-google-cloud-storage-1)
-      - [Create and submit job](#create-and-submit-job)
-      - [Sync results](#sync-results)
-    - [PageRank](#pagerank)
-      - [Upload to Google Cloud Storage](#upload-to-google-cloud-storage-2)
-      - [Create and submit job](#create-and-submit-job-1)
-      - [Sync results](#sync-results-1)
-    - [Join part-r-\*](#join-part-r---)
+  * [Table of contents](#table-of-contents)
+  * [Architecture](#architecture)
+  * [Requirements](#requirements)
+    + [Data](#data)
+    + [Inverted Index](#inverted-index)
+    + [PageRank](#pagerank)
+    + [Join part-r-\*](#join-part-r---)
 
 ## Architecture
 
@@ -28,15 +21,13 @@ TO-DO
 
 ### Data
 
-Use [crawl.sh](./crawl.sh) to get a list of websites, it depends on _httrack_, for example:
+- Use [crawl.sh](./crawl.sh) to get a list of websites, for example:
 
 ```
 ❯ ./crawl.sh https://en.wikipedia.org/wiki/Sorting_algorithm
 ```
 
-#### Upload to Google Cloud Storage
-
-The following command synchronizes local and remote data.
+- Synchronize to Google Cloud Storage: The following command synchronizes your local [data](./data) directory into Google Cloud Storage.
 
 ```
 ❯ gsutil -m rsync -r data "gs://{{BUCKET_NAME}}/data"
@@ -46,72 +37,23 @@ The following command synchronizes local and remote data.
 
 Clone branch [mr-search-engine](https://github.com/sharon1161/inverted-index/tree/mr-search-engine) from [inverted-index repository](https://github.com/sharon1160/inverted-index). Compile and create a JAR executable.
 
-#### Upload to Google Cloud Storage
+- Upload to Google Cloud Storage
 
 ```
 ❯ gsutil cp target/inverted-index-1.0-SNAPSHOT-jar-with-dependencies.jar "gs://{{BUCKET_NAME}}/invertedindex.jar"
 ```
 
-#### Create and submit job
+- Create and submit job
 
 Create a job following Google Dataproc schema, for example:
 
 ```
-{
-  "reference": {
-    "jobId": "{{JOB_ID}}",
-    "projectId": "{{PROJECT_ID}}"
-  },
-  "placement": {
-    "clusterName": "{{BUCKET_NAME}}"
-  },
-  ...
-  "hadoopJob": {
-    "jarFileUris": [
-      "gs://{{BUCKET_NAME}}/invertedindex.jar"
-    ],
-    "args": [
-      "gs://{{BUCKET_NAME}}/data",
-      "gs://{{BUCKET_NAME}}/invertedindex-output"
-    ],
-    "mainClass": "com.mycompany.app.InvertedIndex"
-  }
-}
-```
-
-```
-❯ gcloud dataproc jobs wait {{JOB_ID}} --project {{PROJECT_ID}} --region {{REGION}}
-```
-
-#### Sync results
-
-The following command synchronizes local and remote data.
-
-```
-❯ gsutil -m rsync -r "gs://{{BUCKET_NAME}}/invertedindex-output" output/inverted-index
-```
-
-### PageRank
-
-Clone branch [mr-search-engine](https://github.com/jersonzc/pagerank/tree/mr-search-engine) from [pagerank repository](https://github.com/jersonzc/pagerank). Compile and create a JAR executable.
-
-#### Upload to Google Cloud Storage
-
-```
-❯ gsutil cp target/pagerank0.0-SNAPSHOT-jar-with-dependencies.jar  "gs://{{BUCKET_NAME}}/pagerank.jar"
-```
-
-#### Create and submit job
-
-Create a job following Google Dataproc schema, for example:
-
-```
-POST /v2/projects/{{PROJECT_ID}}/regions/{{REGION}}/jobs:submit/
+POST /v1/projects/{{PROJECT_ID}}/regions/{{REGION}}/jobs:submit/
 {
   "projectId": "{{PROJECT_ID}}",
   "job": {
     "placement": {
-      "clusterName": "{{CLUSTER_NAME}}"
+      "clusterName": "{{DATAPROC_BUCKET_ID}}"
     },
     "statusHistory": [],
     "reference": {
@@ -121,12 +63,60 @@ POST /v2/projects/{{PROJECT_ID}}/regions/{{REGION}}/jobs:submit/
     "hadoopJob": {
       "properties": {},
       "jarFileUris": [
-        "gs://{{BUCKET_NAME}}/pagerank.jar"
+        "gs://{{STORAGE_BUCKET_ID}}/invertedindex.jar"
       ],
       "args": [
-        "gs://{{BUCKET_NAME}}/data",
-        "gs://{{BUCKET_NAME}}/pagerank-temp",
-        "gs://{{BUCKET_NAME}}/pagerank-output",
+        "gs://{{STORAGE_BUCKET_ID}}/data",
+        "gs://{{STORAGE_BUCKET_ID}}/invertedindex-output"
+      ],
+      "mainClass": "com.mycompany.app.InvertedIndex"
+    }
+  }
+}
+```
+
+- Synchronize results: The following command synchronizes the results back to your local computer.
+
+```
+❯ gsutil -m rsync -r "gs://{{BUCKET_NAME}}/invertedindex-output" output/inverted-index
+```
+
+### PageRank
+
+Clone branch [mr-search-engine](https://github.com/jersonzc/pagerank/tree/mr-search-engine) from [pagerank repository](https://github.com/jersonzc/pagerank). Compile and create a JAR executable.
+
+- Upload to Google Cloud Storage
+
+```
+❯ gsutil cp target/pagerank-1.0-SNAPSHOT-jar-with-dependencies.jar  "gs://{{BUCKET_NAME}}/pagerank.jar"
+```
+
+- Create and submit job
+
+Create a job following Google Dataproc schema, for example:
+
+```
+POST /v1/projects/{{PROJECT_ID}}/regions/{{REGION}}/jobs:submit/
+{
+  "projectId": "{{PROJECT_ID}}",
+  "job": {
+    "placement": {
+      "clusterName": "{{DATAPROC_BUCKET_ID}}"
+    },
+    "statusHistory": [],
+    "reference": {
+      "jobId": "{{JOB_ID}}",
+      "projectId": "{{PROJECT_ID}}"
+    },
+    "hadoopJob": {
+      "properties": {},
+      "jarFileUris": [
+        "gs://{{STORAGE_BUCKET_ID}}/pagerank.jar"
+      ],
+      "args": [
+        "gs://{{STORAGE_BUCKET_ID}}/data",
+        "gs://{{STORAGE_BUCKET_ID}}/pagerank-temp",
+        "gs://{{STORAGE_BUCKET_ID}}/pagerank-output",
         "5"
       ],
       "mainClass": "com.mycompany.app.PageRank"
@@ -134,14 +124,7 @@ POST /v2/projects/{{PROJECT_ID}}/regions/{{REGION}}/jobs:submit/
   }
 }
 ```
-
-```
-❯ gcloud dataproc jobs wait {{JOB_ID}} --project {{PROJECT_ID}} --region {{REGION}}
-```
-
-#### Sync results
-
-The following command synchronizes local and remote data.
+- Synchronize to Google Cloud Storage: The following command synchronizes your local [data](./data) directory.
 
 ```
 ❯ gsutil -m rsync -r "gs://{{BUCKET_NAME}}/pagerank-output" output/pagerank
