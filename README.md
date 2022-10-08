@@ -49,7 +49,7 @@ Clone branch [mr-search-engine](https://github.com/sharon1161/inverted-index/tre
 #### Upload to Google Cloud Storage
 
 ```
-❯ gsutil cp target/inverted-index0.0-SNAPSHOT-jar-with-dependencies.jar "gs://{{BUCKET_NAME}}/invertedindex.jar"
+❯ gsutil cp target/inverted-index-1.0-SNAPSHOT-jar-with-dependencies.jar "gs://{{BUCKET_NAME}}/invertedindex.jar"
 ```
 
 #### Create and submit job
