@@ -5,17 +5,17 @@
 ## Table of contents
 
 - [busca.pe](#buscape)
-  * [Table of contents](#table-of-contents)
-  * [Architecture](#architecture)
-  * [Requirements](#requirements)
-    + [Data](#data)
-    + [Inverted Index](#inverted-index)
-    + [PageRank](#pagerank)
-    + [Join part-r-\*](#join-part-r---)
+  - [Table of contents](#table-of-contents)
+  - [Architecture](#architecture)
+  - [Requirements](#requirements)
+    - [Data](#data)
+    - [Inverted Index](#inverted-index)
+    - [PageRank](#pagerank)
+    - [Join part-r-\*](#join-part-r---)
 
 ## Architecture
 
-TO-DO
+![Pipeline of busca.pe](./docs/imgs/pipeline.png)
 
 ## Requirements
 
@@ -124,6 +124,7 @@ POST /v1/projects/{{PROJECT_ID}}/regions/{{REGION}}/jobs:submit/
   }
 }
 ```
+
 - Synchronize to Google Cloud Storage: The following command synchronizes your local [data](./data) directory.
 
 ```
